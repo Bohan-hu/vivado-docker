@@ -1,14 +1,15 @@
 # vivado-docker
 
-Vivado installed into a docker image for CI purposes.
+Vivado installed into a docker image for INGInious Autograder used in HITSZ.
+See document at https://inginious.readthedocs.io/en/v0.6/teacher_doc/create_container.html
 
 ## Build instructions
 
-1. Copy the Vivado installation package `Xilinx_Vivado_SDK_2018.3_1207_2324.tar.gz` to this folder.
-3. Potentialy modify the `install_config.txt` to change the install options.
-4. Build the image (will take about 30 minutes) passing in a build arg
+1. Copy the Vivado extracted installation file folder `Xilinx_Vivado_SDK_2018.3_1207_2324` to this folder.
+2. Potentialy modify the `install_config.txt` to change the install options.
+3. Build the image (will take about 30 minutes) passing in a build arg
     ```shell
-    docker build --build-arg VIVADO_VERSION=2018.3 --build-arg VIVADO_TAR_FILE=Xilinx_Vivado_SDK_2018.3_1207_2324.tar.gz -t vivado:2018.3 .
+    docker build --build-arg VIVADO_VERSION=2018.3 --build-arg VIVADO_SRC_DICT=Xilinx_Vivado_SDK_2018.3_1207_2324 -t vivado:2018.3 .
     ```
 
 ## Running

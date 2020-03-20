@@ -1,58 +1,36 @@
-FROM ubuntu:16.04
+# Inherit from the default container, which have all the needed script to launch tasks
+# CentOS mirror
+FROM    ingi/inginious-c-base
 
-MAINTAINER z4yx <z4yx@users.noreply.github.com>
+# Set the environment name for tasks to let the grader detect it
+LABEL   org.inginious.grading.name="verilog-vivado"
 
-# build with docker build --build-arg VIVADO_VERSION=2018.1 --build-arg VIVADO_TAR_FILE=Xilinx_Vivado_SDK_2018.1_0405_1.tar.gz -t vivado:2018.1 .
+MAINTAINER hubohan <hubohancser@gmail.com>
 
-ARG UBUNTU_MIRROR=mirror.tuna.tsinghua.edu.cn
+# Build with: 
+# docker build --build-arg VIVADO_VERSION=2018.3 --build-arg VIVADO_SRC_DICT=Xilinx_Vivado_SDK_2018.3_1207_2324 -t vivado:2018.3 .
 
 #install dependences for:
-# * downloading Vivado (wget)
-# * xsim (gcc build-essential to also get make)
-# * MIG tool (libglib2.0-0 libsm6 libxi6 libxrender1 libxrandr2 libfreetype6 libfontconfig)
-# * CI (git)
-RUN sed -i.bak s/archive.ubuntu.com/${UBUNTU_MIRROR}/g /etc/apt/sources.list && \
-  apt-get update && apt-get install -y \
-  build-essential \
-  sudo \
-  libxtst6 \
-  libglib2.0-0 \
-  libsm6 \
-  libxi6 \
-  libxrender1 \
-  libxrandr2 \
-  libfreetype6 \
-  libfontconfig \
-  lsb-release \
-  git
+# make
+
+RUN sudo sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+         -e 's|^#baseurl=http://mirror.centos.org/centos|baseurl=https://mirrors.ustc.edu.cn/centos|g' \
+         -i.bak \
+         /etc/yum.repos.d/CentOS-Base.repo && yum makecache && yum -y install gcc automake autoconf libtool make
 
 ARG VIVADO_VERSION
-ARG VIVADO_TAR_FILE
+ARG VIVADO_SRC_DICT
 
 RUN mkdir /install_vivado
 COPY install_config.txt /
-# ADD does the extraction
-ADD ${VIVADO_TAR_FILE} /install_vivado/
+# COPY INSTALLATION FILES
+COPY ${VIVADO_SRC_DICT} /install_vivado/
 
 # run the install
-RUN /install_vivado/*/xsetup --agree 3rdPartyEULA,WebTalkTerms,XilinxEULA --batch Install --config /install_config.txt && \
-  rm -rf /${VIVADO_TAR_FILE} /install_config.txt /install_vivado
-
-#make a Vivado user
-RUN adduser --disabled-password --gecos '' vivado &&\
-  usermod -aG sudo vivado &&\
-  echo "vivado ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
-USER vivado
-WORKDIR /home/vivado
-ENV HOME /home/vivado
-ENV VIVADO_VERSION ${VIVADO_VERSION}
+RUN /install_vivado/xsetup --agree 3rdPartyEULA,WebTalkTerms,XilinxEULA --batch Install --config /install_config.txt && \
+  rm -rf /${VIVADO_SRC_DICT} /install_config.txt /install_vivado
 
 #add vivado tools to path
-RUN echo "source /opt/Xilinx/Vivado/${VIVADO_VERSION}/settings64.sh" >> /home/vivado/.bashrc
-
-#copy in the license file
-#RUN mkdir /home/vivado/.Xilinx
-#COPY Xilinx.lic /home/vivado/.Xilinx/
+RUN echo "source /opt/Xilinx/Vivado/${VIVADO_VERSION}/settings64.sh" >> ~/.bashrc
 
 CMD ["sh","-c","exec /opt/Xilinx/Vivado/${VIVADO_VERSION}/bin/vivado"]
