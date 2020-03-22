@@ -23,6 +23,6 @@ RUN /install_vivado/xsetup --agree 3rdPartyEULA,WebTalkTerms,XilinxEULA --batch 
 # do the cleanup
 RUN rm -rf /${VIVADO_SRC_DICT} /install_config.txt /install_vivado
 # add vivado tools to path
+ENV VIVADO_VERSION ${VIVADO_VERSION}
 RUN echo "source /opt/Xilinx/Vivado/${VIVADO_VERSION}/settings64.sh" >> ~/.bashrc
-# run vivado
-CMD ["sh","-c","exec /opt/Xilinx/Vivado/${VIVADO_VERSION}/bin/vivado"]
+
